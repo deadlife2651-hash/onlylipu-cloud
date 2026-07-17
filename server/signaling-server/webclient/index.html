@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnlyLipu Cloud</title>
+<link rel="manifest" href="/app/manifest.json">
+<meta name="theme-color" content="#0B0E13">
+<style>
+  :root{
+    --bg:#0B0E13;--panel:#11151C;--panel2:#1A2029;--line:#242C38;
+    --accent:#38BDF8;--text:#E8EEF6;--muted:#9AA7B8;
+    --green:#34D399;--amber:#FBBF24;--red:#F87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;
+    font-family:'Segoe UI',-apple-system,Roboto,sans-serif}
+  body{background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+  .hidden{display:none!important}
+  button{cursor:pointer;border:none;border-radius:12px;padding:12px 22px;
+    background:var(--accent);color:#0B0E13;font-weight:600;font-size:14px}
+  button.ghost{background:var(--panel2);color:var(--text)}
+  button:disabled{opacity:.5}
+  input{width:100%;padding:13px 15px;border-radius:12px;border:1px solid var(--line);
+    background:var(--panel2);color:var(--text);font-size:15px;margin-bottom:13px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+  .on{background:var(--green)}.off{background:var(--red)}.warn{background:var(--amber)}
+  .muted{color:var(--muted);font-size:13px}
+
+  /* splash */
+  #splash{position:fixed;inset:0;background:var(--bg);display:flex;
+    flex-direction:column;align-items:center;justify-content:center;z-index:100;
+    transition:opacity .5s}
+  #splash svg{width:90px;animation:pop .9s cubic-bezier(.2,.8,.3,1)}
+  #splash h1{letter-spacing:5px;font-size:22px;margin-top:18px}
+  @keyframes pop{from{transform:scale(.55);opacity:0}to{transform:scale(1);opacity:1}}
+
+  /* login */
+  #loginView{display:flex;height:100vh;align-items:center;justify-content:center}
+  #loginBox{width:100%;max-width:380px;background:var(--panel);
+    border:1px solid var(--line);border-radius:22px;padding:36px}
+  #loginBox h2{font-size:24px;margin-bottom:4px}
+
+  /* dashboard */
+  #dashView{display:flex;flex-direction:column;height:100vh}
+  header{display:flex;align-items:center;justify-content:space-between;
+    padding:14px 26px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:2px;font-size:15px}
+  main{flex:1;overflow-y:auto;padding:26px;max-width:1050px;width:100%;margin:0 auto}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:20px}
+  .env{background:var(--panel);border:1px solid var(--line);border-radius:20px;
+    padding:26px;cursor:pointer;transition:border-color .2s,transform .15s}
+  .env:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .env h3{font-size:20px;margin:12px 0 4px}
+  .env .icon{font-size:34px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:20px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .stat h4{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .stat .v{font-size:20px;font-weight:700}
+  .bar{height:5px;background:var(--panel2);border-radius:3px;margin-top:9px;overflow:hidden}
+  .bar>div{height:100%;background:var(--accent);transition:width .6s}
+
+  /* session (fullscreen iframe) */
+  #sessionView{position:fixed;inset:0;background:#000;z-index:60;display:flex;flex-direction:column}
+  #sessionBar{display:flex;align-items:center;gap:14px;padding:8px 16px;
+    background:rgba(17,21,28,.95);border-bottom:1px solid var(--line)}
+  #sessionBar h3{font-size:14px;flex:1}
+  #sessionFrame{flex:1;border:none;width:100%}
+  #androidHelp{flex:1;display:flex;align-items:center;justify-content:center;
+    flex-direction:column;gap:14px;padding:30px;text-align:center}
+  code{background:var(--panel2);padding:4px 10px;border-radius:8px;
+    font-size:14px;color:var(--accent)}
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);
+    background:var(--panel2);border:1px solid var(--line);padding:12px 22px;
+    border-radius:12px;font-size:14px;z-index:200}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <svg viewBox="0 0 108 108"><path fill="#38BDF8" d="M54 8 92 30v48L54 100 16 78V30Z"/><path fill="#0B0E13" d="M54 22 78 36v36L54 86 30 72V36Z"/><circle cx="54" cy="54" r="10" fill="#E8EEF6"/></svg>
+  <h1>ONLYLIPU CLOUD</h1>
+  <p class="muted" style="margin-top:8px">Your Private Computer. Your Cloud Android.</p>
+</div>
+
+<div id="loginView" class="hidden">
+  <div id="loginBox">
+    <h2>Welcome back</h2>
+    <p class="muted" style="margin-bottom:22px">Sign in to your private cloud</p>
+    <input type="text" id="u" placeholder="Email or username" autocomplete="username">
+    <input type="password" id="p" placeholder="Password" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')login()">
+    <button style="width:100%" id="loginBtn" onclick="login()">Sign in</button>
+    <p id="loginErr" class="muted" style="color:var(--red);margin-top:12px"></p>
+  </div>
+</div>
+
+<div id="dashView" class="hidden">
+  <header>
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 108 108"><path fill="#38BDF8" d="M54 8 92 30v48L54 100 16 78V30Z"/><path fill="#0B0E13" d="M54 22 78 36v36L54 86 30 72V36Z"/><circle cx="54" cy="54" r="10" fill="#E8EEF6"/></svg>
+      ONLYLIPU CLOUD
+    </div>
+    <div style="display:flex;gap:16px;align-items:center">
+      <span id="chip" class="muted"><span class="dot warn"></span>connecting…</span>
+      <button class="ghost" onclick="logout()">Log out</button>
+    </div>
+  </header>
+  <main>
+    <h2 style="font-size:22px">Dashboard</h2>
+    <p class="muted" id="pingLine">—</p>
+    <div class="cards">
+      <div class="env" onclick="openComputer()">
+        <div class="icon">🖥️</div>
+        <h3>Cloud Computer</h3>
+        <p class="muted">Your dedicated desktop — full-screen in this window</p>
+        <p class="muted" id="deskState" style="margin-top:10px"><span class="dot off"></span>checking…</p>
+      </div>
+      <div class="env" onclick="openAndroid()">
+        <div class="icon">📱</div>
+        <h3>Cloud Android</h3>
+        <p class="muted">Your private Android phone in the cloud</p>
+        <p class="muted" id="androidState" style="margin-top:10px"><span class="dot off"></span>checking…</p>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="stat"><h4>CPU</h4><div class="v" id="cpu">–</div>
+        <div class="bar"><div id="cpuBar"></div></div></div>
+      <div class="stat"><h4>RAM</h4><div class="v" id="ram">–</div>
+        <div class="bar"><div id="ramBar"></div></div></div>
+      <div class="stat"><h4>STORAGE</h4><div class="v" id="disk">–</div>
+        <div class="bar"><div id="diskBar"></div></div></div>
+      <div class="stat"><h4>LOCATION</h4><div class="v" id="loc" style="font-size:16px">–</div></div>
+    </div>
+  </main>
+</div>
+
+<div id="sessionView" class="hidden">
+  <div id="sessionBar">
+    <button class="ghost" onclick="closeSession()">← Dashboard</button>
+    <h3 id="sessionTitle"></h3>
+    <button class="ghost" onclick="toggleFull()">⛶ Full screen</button>
+  </div>
+  <iframe id="sessionFrame" class="hidden" allow="clipboard-read;clipboard-write"></iframe>
+  <div id="androidHelp" class="hidden">
+    <div style="font-size:44px">📱</div>
+    <h2>Cloud Android on Windows</h2>
+    <p class="muted" style="max-width:560px">
+      The smoothest Cloud Android experience on a laptop is <b>scrcpy</b> — a real-time,
+      low-latency Android window. One-time setup (2 minutes):
+    </p>
+    <div style="text-align:left;line-height:2.1;max-width:560px">
+      1. Download scrcpy for Windows: <code>github.com/Genymobile/scrcpy/releases</code><br>
+      2. Extract, open a terminal in that folder<br>
+      3. Connect through a secure tunnel:<br>
+      &nbsp;&nbsp;<code id="tunnelCmd">ssh -L 5555:localhost:5555 root@SERVER_IP</code><br>
+      4. Then run: <code>scrcpy --video-codec=h265 --max-fps=60</code>
+    </div>
+    <p class="muted">Cloud Android also runs full-screen inside the OnlyLipu phone app.</p>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+let token = localStorage.getItem('ol_token') || '';
+const $ = id => document.getElementById(id);
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/app/sw.js');
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    $('splash').style.opacity = '0';
+    setTimeout(() => {
+      $('splash').classList.add('hidden');
+      token ? showDash() : showLogin();
+    }, 500);
+  }, 1100);
+});
+
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.remove('hidden');
+  setTimeout(()=>t.classList.add('hidden'),3000); }
+function showLogin(){ $('loginView').classList.remove('hidden'); $('dashView').classList.add('hidden'); }
+function showDash(){ $('loginView').classList.add('hidden'); $('dashView').classList.remove('hidden');
+  refresh(); setInterval(refresh, 5000); }
+
+async function api(path, opts={}){
+  opts.headers = Object.assign({'Authorization':'Bearer '+token}, opts.headers||{});
+  const r = await fetch('/api'+path, opts);
+  if (r.status === 401){ logout(); throw new Error('unauthorized'); }
+  return r.json();
+}
+async function login(){
+  $('loginErr').textContent=''; $('loginBtn').disabled=true;
+  try{
+    const r = await fetch('/api/auth/login',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:$('u').value,password:$('p').value})});
+    const j = await r.json();
+    if (r.ok && j.token){ token=j.token; localStorage.setItem('ol_token',token); showDash(); }
+    else $('loginErr').textContent='Invalid username or password';
+  }catch{ $('loginErr').textContent='Cannot reach server'; }
+  $('loginBtn').disabled=false;
+}
+function logout(){ localStorage.removeItem('ol_token'); token=''; location.reload(); }
+
+async function refresh(){
+  try{
+    const s = await api('/status');
+    $('chip').innerHTML='<span class="dot on"></span>Online';
+    $('cpu').textContent=s.cpuPercent+'%'; $('cpuBar').style.width=s.cpuPercent+'%';
+    $('ram').textContent=s.ramUsedGb+' / '+s.ramTotalGb+' GB';
+    $('ramBar').style.width=(s.ramUsedGb/s.ramTotalGb*100)+'%';
+    $('disk').textContent=s.storageUsedGb+' / '+s.storageTotalGb+' GB';
+    $('diskBar').style.width=(s.storageUsedGb/s.storageTotalGb*100)+'%';
+    $('loc').textContent=s.location;
+    $('deskState').innerHTML = s.cloudComputerRunning
+      ? '<span class="dot on"></span>Running — tap to open' : '<span class="dot off"></span>Stopped';
+    $('androidState').innerHTML = s.cloudAndroidRunning
+      ? '<span class="dot on"></span>Running' : '<span class="dot warn"></span>Stopped — starting on connect';
+    const t0 = performance.now();
+    await fetch('/api/status',{method:'HEAD',headers:{'Authorization':'Bearer '+token}}).catch(()=>{});
+    $('pingLine').textContent = 'Latency: ' + Math.round(performance.now()-t0) + ' ms';
+  }catch{
+    $('chip').innerHTML='<span class="dot off"></span>Offline';
+  }
+}
+
+function openComputer(){
+  $('sessionTitle').textContent='Cloud Computer';
+  $('sessionFrame').classList.remove('hidden');
+  $('androidHelp').classList.add('hidden');
+  $('sessionFrame').src='/desktop/vnc.html?autoconnect=true&resize=scale&path=desktop/websockify';
+  $('sessionView').classList.remove('hidden');
+}
+function openAndroid(){
+  $('sessionTitle').textContent='Cloud Android';
+  $('sessionFrame').classList.add('hidden');
+  $('androidHelp').classList.remove('hidden');
+  $('sessionView').classList.remove('hidden');
+  api('/vm/android/start',{method:'POST'}).then(()=>toast('Cloud Android is starting…'));
+}
+function closeSession(){
+  $('sessionFrame').src='about:blank';
+  $('sessionView').classList.add('hidden');
+}
+function toggleFull(){
+  document.fullscreenElement ? document.exitFullscreen()
+    : $('sessionView').requestFullscreen();
+}
+</script>
+</body>
+</html>

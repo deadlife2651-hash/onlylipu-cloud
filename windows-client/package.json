@@ -1,0 +1,31 @@
+{
+  "name": "onlylipu-cloud-windows",
+  "version": "1.0.0",
+  "description": "OnlyLipu Cloud — Windows 11 desktop client",
+  "main": "main.js",
+  "author": "OnlyLipu",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.onlylipu.cloud",
+    "productName": "OnlyLipu Cloud",
+    "win": {
+      "target": ["nsis"],
+      "icon": "icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "files": ["main.js", "preload.js", "config.json", "icon.ico"]
+  }
+}

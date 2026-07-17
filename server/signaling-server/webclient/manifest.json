@@ -1,0 +1,12 @@
+{
+  "name": "OnlyLipu Cloud",
+  "short_name": "OnlyLipu",
+  "description": "Your Private Computer. Your Cloud Android.",
+  "start_url": "/app/",
+  "display": "standalone",
+  "background_color": "#0B0E13",
+  "theme_color": "#0B0E13",
+  "icons": [
+    { "src": "/app/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
