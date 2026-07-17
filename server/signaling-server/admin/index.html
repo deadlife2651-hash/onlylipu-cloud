@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OnlyLipu Cloud — Admin</title>
+<style>
+  :root{
+    --bg:#0B0E13; --panel:#11151C; --panel2:#1A2029; --line:#242C38;
+    --accent:#38BDF8; --text:#E8EEF6; --muted:#9AA7B8;
+    --green:#34D399; --amber:#FBBF24; --red:#F87171;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif}
+  body{background:var(--bg);color:var(--text);min-height:100vh}
+  .hidden{display:none!important}
+  header{display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:2px}
+  .logo{width:34px;height:34px}
+  button{cursor:pointer;border:none;border-radius:10px;padding:10px 18px;
+    background:var(--accent);color:#0B0E13;font-weight:600;font-size:14px}
+  button.ghost{background:var(--panel2);color:var(--text)}
+  button.danger{background:transparent;color:var(--red);border:1px solid var(--red)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  main{max-width:1100px;margin:0 auto;padding:24px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px}
+  .card h3{font-size:13px;color:var(--muted);font-weight:600;margin-bottom:8px}
+  .big{font-size:26px;font-weight:700}
+  .bar{height:6px;background:var(--panel2);border-radius:3px;margin-top:10px;overflow:hidden}
+  .bar>div{height:100%;background:var(--accent);border-radius:3px;transition:width .6s}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}
+  .on{background:var(--green)} .off{background:var(--red)} .warn{background:var(--amber)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .section{margin-top:26px}
+  .section h2{font-size:16px;margin-bottom:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td,th{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+  th{color:var(--muted);font-weight:600}
+  .envs{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+  .env-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
+  .env-card h3{font-size:18px}
+  .env-card p{color:var(--muted);font-size:13px;margin:6px 0 14px}
+  input[type=text],input[type=password]{width:100%;padding:12px 14px;border-radius:12px;
+    border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:15px;margin-bottom:12px}
+  #loginView{display:flex;min-height:100vh;align-items:center;justify-content:center}
+  #loginBox{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);
+    border-radius:20px;padding:32px}
+  .muted{color:var(--muted);font-size:13px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--panel2);border:1px solid var(--line);padding:12px 20px;
+    border-radius:12px;font-size:14px;z-index:50}
+  #uploadZone{border:1.5px dashed var(--line);border-radius:14px;padding:22px;
+    text-align:center;color:var(--muted);font-size:14px;margin-bottom:14px;cursor:pointer}
+  #uploadZone:hover{border-color:var(--accent)}
+  progress{width:100%;height:6px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<div id="loginView">
+  <div id="loginBox">
+    <div class="brand" style="justify-content:center;margin-bottom:18px">
+      <svg class="logo" viewBox="0 0 108 108"><path fill="#38BDF8" d="M54 8 92 30v48L54 100 16 78V30Z"/><path fill="#0B0E13" d="M54 22 78 36v36L54 86 30 72V36Z"/><circle cx="54" cy="54" r="10" fill="#E8EEF6"/></svg>
+      ONLYLIPU CLOUD
+    </div>
+    <p class="muted" style="text-align:center;margin-bottom:18px">Admin Panel — sign in to continue</p>
+    <input type="text" id="u" placeholder="Username" autocomplete="username">
+    <input type="password" id="p" placeholder="Password" autocomplete="current-password">
+    <button style="width:100%" onclick="login()">Sign in</button>
+    <p id="loginErr" class="muted" style="color:var(--red);margin-top:10px;text-align:center"></p>
+  </div>
+</div>
+
+<div id="appView" class="hidden">
+<header>
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 108 108"><path fill="#38BDF8" d="M54 8 92 30v48L54 100 16 78V30Z"/><path fill="#0B0E13" d="M54 22 78 36v36L54 86 30 72V36Z"/><circle cx="54" cy="54" r="10" fill="#E8EEF6"/></svg>
+    ONLYLIPU CLOUD
+  </div>
+  <div class="row">
+    <span id="statusChip" class="muted"><span class="dot warn"></span>checking…</span>
+    <button class="ghost" onclick="logout()">Log out</button>
+  </div>
+</header>
+
+<main>
+  <div class="grid">
+    <div class="card"><h3>CPU</h3><div class="big" id="cpu">–</div>
+      <div class="bar"><div id="cpuBar" style="width:0%"></div></div></div>
+    <div class="card"><h3>RAM</h3><div class="big" id="ram">–</div>
+      <div class="bar"><div id="ramBar" style="width:0%"></div></div></div>
+    <div class="card"><h3>STORAGE</h3><div class="big" id="disk">–</div>
+      <div class="bar"><div id="diskBar" style="width:0%"></div></div></div>
+    <div class="card"><h3>LOCATION</h3><div class="big" id="loc" style="font-size:20px">–</div>
+      <div class="muted" id="sessions">0 active sessions</div></div>
+  </div>
+
+  <div class="section">
+    <h2>Environments</h2>
+    <div class="envs">
+      <div class="env-card">
+        <div class="row"><h3>Cloud Computer</h3>
+          <span class="muted" id="deskState"><span class="dot off"></span>stopped</span></div>
+        <p>Your dedicated Ubuntu desktop (browser access via secure noVNC).</p>
+        <div class="row">
+          <button onclick="openDesktop()">Open desktop</button>
+        </div>
+      </div>
+      <div class="env-card">
+        <div class="row"><h3>Cloud Android</h3>
+          <span class="muted" id="androidState"><span class="dot off"></span>stopped</span></div>
+        <p>Your private Android phone (redroid, full-screen in the OnlyLipu app).</p>
+        <div class="row">
+          <button class="ghost" id="btnAStart" onclick="vmAction('start')">Start</button>
+          <button class="danger" onclick="vmAction('stop')">Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Cloud Android — App management</h2>
+    <div class="card">
+      <div id="uploadZone" onclick="document.getElementById('apkFile').click()">
+        Tap to select an APK, or drop it here — it uploads and installs into Cloud Android.
+        <input type="file" id="apkFile" accept=".apk" class="hidden" onchange="uploadApk(this.files[0])">
+        <progress id="upProg" value="0" max="100" class="hidden"></progress>
+        <div id="upText" class="muted"></div>
+      </div>
+      <table>
+        <thead><tr><th>App</th><th>Version</th><th></th></tr></thead>
+        <tbody id="appsBody"><tr><td colspan="3" class="muted">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Audit log</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>Time (UTC)</th><th>Action</th><th>Detail</th><th>IP</th></tr></thead>
+        <tbody id="auditBody"><tr><td colspan="4" class="muted">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+let token = localStorage.getItem('ol_token') || '';
+const $ = id => document.getElementById(id);
+
+function toast(msg, ms=3000){
+  const t = $('toast'); t.textContent = msg; t.classList.remove('hidden');
+  setTimeout(()=>t.classList.add('hidden'), ms);
+}
+async function api(path, opts={}){
+  opts.headers = Object.assign({'Authorization':'Bearer '+token}, opts.headers||{});
+  const r = await fetch('/api'+path, opts);
+  if (r.status === 401){ logout(); throw new Error('unauthorized'); }
+  return r.json();
+}
+async function login(){
+  $('loginErr').textContent = '';
+  const r = await fetch('/api/auth/login',{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username:$('u').value,password:$('p').value})});
+  const j = await r.json();
+  if (r.ok && j.token){ token=j.token; localStorage.setItem('ol_token',token); showApp(); }
+  else $('loginErr').textContent = 'Invalid username or password';
+}
+function logout(){ localStorage.removeItem('ol_token'); token='';
+  $('appView').classList.add('hidden'); $('loginView').classList.remove('hidden'); }
+function showApp(){
+  $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden');
+  refresh(); loadApps(); loadAudit();
+  setInterval(refresh, 5000);
+}
+async function refresh(){
+  try{
+    const s = await api('/status');
+    $('statusChip').innerHTML = '<span class="dot on"></span>Online';
+    $('cpu').textContent = s.cpuPercent + '%';
+    $('cpuBar').style.width = Math.min(s.cpuPercent,100)+'%';
+    $('ram').textContent = s.ramUsedGb + ' / ' + s.ramTotalGb + ' GB';
+    $('ramBar').style.width = (s.ramUsedGb/s.ramTotalGb*100)+'%';
+    $('disk').textContent = s.storageUsedGb + ' / ' + s.storageTotalGb + ' GB';
+    $('diskBar').style.width = (s.storageUsedGb/s.storageTotalGb*100)+'%';
+    $('loc').textContent = s.location;
+    $('sessions').textContent = s.activeSessions + ' active sessions';
+    $('androidState').innerHTML = s.cloudAndroidRunning
+      ? '<span class="dot on"></span>running' : '<span class="dot off"></span>stopped';
+    $('deskState').innerHTML = s.cloudComputerRunning
+      ? '<span class="dot on"></span>running' : '<span class="dot off"></span>stopped';
+  }catch(e){
+    $('statusChip').innerHTML = '<span class="dot off"></span>Unreachable';
+  }
+}
+async function vmAction(a){
+  const j = await api('/vm/android/'+a,{method:'POST'});
+  toast(j.message || (a==='start'?'Starting…':'Stopping…'));
+  setTimeout(refresh, 4000);
+}
+function openDesktop(){ window.open('/desktop/vnc.html?autoconnect=true&resize=scale&path=desktop/websockify','_blank'); }
+async function loadApps(){
+  try{
+    const j = await api('/apps');
+    $('appsBody').innerHTML = j.apps.length ? j.apps.map(a=>
+      `<tr><td>${a.packageName}</td><td>${a.versionName||'—'}</td>
+       <td style="text-align:right">
+         <button class="ghost" onclick="clearData('${a.packageName}')">Clear data</button>
+         <button class="danger" onclick="uninstall('${a.packageName}')">Uninstall</button>
+       </td></tr>`).join('')
+      : '<tr><td colspan="3" class="muted">No user apps installed yet — or Cloud Android is stopped.</td></tr>';
+  }catch(e){
+    $('appsBody').innerHTML = '<tr><td colspan="3" class="muted">Cloud Android not reachable.</td></tr>';
+  }
+}
+async function uninstall(pkg){
+  const j = await api('/apps/'+pkg,{method:'DELETE'});
+  toast(j.message||'Done'); loadApps();
+}
+async function clearData(pkg){
+  const j = await api('/apps/'+pkg+'/clear-data',{method:'POST'});
+  toast(j.message||'Done');
+}
+async function loadAudit(){
+  try{
+    const j = await api('/audit');
+    $('auditBody').innerHTML = j.entries.length ? j.entries.map(e=>
+      `<tr><td>${e.ts||''}</td><td>${e.action||''}</td>
+       <td class="muted">${JSON.stringify(e.detail||{})}</td><td class="muted">${e.ip||''}</td></tr>`).join('')
+      : '<tr><td colspan="4" class="muted">No entries yet.</td></tr>';
+  }catch(e){
+    $('auditBody').innerHTML = '<tr><td colspan="4" class="muted">Could not load audit log.</td></tr>';
+  }
+}
+function uploadApk(file){
+  if(!file) return;
+  if(!file.name.toLowerCase().endsWith('.apk')){ toast('Only .apk files allowed'); return; }
+  const fd = new FormData(); fd.append('apk', file);
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST','/api/apps/install');
+  xhr.setRequestHeader('Authorization','Bearer '+token);
+  $('upProg').classList.remove('hidden');
+  xhr.upload.onprogress = e => {
+    if(e.lengthComputable){
+      const pct = Math.round(e.loaded/e.total*100);
+      $('upProg').value = pct;
+      $('upText').textContent = 'Uploading '+file.name+' — '+pct+'%';
+    }
+  };
+  xhr.onload = () => {
+    $('upProg').classList.add('hidden');
+    try{
+      const j = JSON.parse(xhr.responseText);
+      if(xhr.status===200){ toast('Installed ✔'); $('upText').textContent=''; }
+      else { toast('Install failed: '+(j.error||xhr.status)); $('upText').textContent=''; }
+    }catch{ toast('Unexpected server response'); }
+    loadApps();
+  };
+  xhr.onerror = () => { $('upProg').classList.add('hidden'); toast('Upload failed'); };
+  xhr.send(fd);
+}
+// drag & drop
+const zone = $('uploadZone');
+zone.addEventListener('dragover', e=>e.preventDefault());
+zone.addEventListener('drop', e=>{e.preventDefault(); uploadApk(e.dataTransfer.files[0]);});
+
+if (token) showApp();
+</script>
+</body>
+</html>
