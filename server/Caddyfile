@@ -1,0 +1,11 @@
+{$DOMAIN} {
+	encode zstd gzip
+
+	# Admin panel + REST API + WebSocket signaling
+	reverse_proxy control:8080
+
+	# Cloud Computer (noVNC desktop)
+	handle_path /desktop/* {
+		reverse_proxy desktop:6080
+	}
+}

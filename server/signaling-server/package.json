@@ -1,0 +1,15 @@
+{
+  "name": "onlylipu-control-server",
+  "version": "1.0.0",
+  "description": "OnlyLipu Cloud control server: auth, status, app management, WebRTC signaling, admin panel",
+  "main": "server.js",
+  "private": true,
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "systeminformation": "^5.23.5",
+    "ws": "^8.18.0"
+  }
+}

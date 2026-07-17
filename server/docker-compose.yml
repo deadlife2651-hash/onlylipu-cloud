@@ -1,0 +1,70 @@
+services:
+  control:
+    build: ./signaling-server
+    container_name: onlylipu-control
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - REDROID_CONTAINER=onlylipu-android
+      - ADB_SERIAL=host.docker.internal:5555
+      - PORT=8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - onlylipu-data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks: [onlylipu]
+
+  android:
+    image: redroid/redroid:15.0.0-latest
+    container_name: onlylipu-android
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "5555:5555"
+    volumes:
+      - android-data:/data
+    mem_limit: 8g
+    cpus: 4
+    command:
+      - androidboot.redroid_width=1080
+      - androidboot.redroid_height=2340
+      - androidboot.redroid_dpi=420
+      - androidboot.redroid_fps=60
+      - androidboot.redroid_gpu_mode=auto
+    networks: [onlylipu]
+
+  desktop:
+    image: dorowu/ubuntu-desktop-lxde-vnc:latest
+    container_name: onlylipu-desktop
+    restart: unless-stopped
+    environment:
+      - VNC_PASSWORD=${DESKTOP_PASSWORD}
+      - RESOLUTION=1920x1080
+    shm_size: 2g
+    mem_limit: 8g
+    cpus: 2
+    networks: [onlylipu]
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: onlylipu-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [onlylipu]
+
+volumes:
+  onlylipu-data:
+  android-data:
+  caddy-data:
+  caddy-config:
+
+networks:
+  onlylipu:
+    driver: bridge
